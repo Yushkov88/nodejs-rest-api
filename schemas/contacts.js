@@ -1,9 +1,13 @@
 const Joi = require("joi");
 
 const contactAddSchema = Joi.object({
-  name: Joi.string().alphanum().min(3).max(30).required(),
-  email: Joi.string().required(),
-  phone: Joi.string().min(3).max(30).required(),
+  name: Joi.string()
+    .pattern(/^[a-zA-Z\s'’ʼ-]{3,30}$/)
+    .required(),
+  email: Joi.string().email().required(),
+  phone: Joi.string()
+    .pattern(/^[0-9()+\s-]{10,19}$/)
+    .required(),
 });
 
 module.exports = {
