@@ -1,62 +1,43 @@
 const express = require("express");
 
-const { validationBody } = require("../../middlewares");
+const ctrl = require("../../controllers");
 
-const schemas = require("../../schemas");
+const { controllerWrapper } = require("../../helpers");
+
+const { validationBody, isValidId } = require("../../middlewares");
+
+const { schemas } = require("../../models/contacts");
 
 const router = express.Router();
 
-const RequestError = require("../../helpers/RequestError");
-const {
-  listContacts,
-  getContactById,
-  addContact,
-  updateContact,
-  removeContact,
-} = require("../../models/contacts");
+router.get("/", controllerWrapper(ctrl.contacts.listContacts));
 
-router.get("/", async (req, res, next) => {
-  const result = await listContacts();
-  res.json({
-    status: "success",
-    code: 200,
-    data: result,
-  });
-});
-
-router.get("/:id", async (req, res, next) => {
-  const { id } = req.params;
-  const contact = await getContactById(id);
-  if (!contact) {
-    throw new RequestError(404, "Not found");
-  }
-  res.status(200).json(contact);
-});
+router.get("/:id", isValidId, controllerWrapper(ctrl.contacts.getContactById));
 
 router.post(
   "/",
-  validationBody(schemas.contacts.add),
-  async (req, res, next) => {
-    res.status(201).json(await addContact(req.body));
-  }
+  validationBody(schemas.addSchema),
+  controllerWrapper(ctrl.contacts.addContact)
 );
 
-router.put("/:id", async (req, res, next) => {
-  const { id } = req.params;
-  const result = await updateContact(id, req.body);
-  if (!result) {
-    next(new RequestError(404, "Not found"));
-  }
-  res.json(result);
-});
+router.delete(
+  "/:id",
+  isValidId,
+  controllerWrapper(ctrl.contacts.removeContact)
+);
 
-router.delete("/:id", async (req, res, next) => {
-  const { id } = req.params;
-  const result = await removeContact(id);
-  if (!result) {
-    throw new RequestError(404, "Not found");
-  }
-  res.json({ message: "contact deleted" });
-});
+router.put(
+  "/:id",
+  isValidId,
+  validationBody(schemas.addSchema),
+  controllerWrapper(ctrl.contacts.updateContact)
+);
+
+router.patch(
+  "/:id/favorite",
+  isValidId,
+  validationBody(schemas.updateFavoriteSchema),
+  controllerWrapper(ctrl.contacts.updateStatusContact)
+);
 
 module.exports = router;

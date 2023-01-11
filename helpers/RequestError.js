@@ -1,11 +1,8 @@
-const statusMessages = {
-  404: "Not found",
+const RequestError = (status, message) => {
+  const error = new Error(message);
+  error.status = status;
+
+  return error;
 };
-class RequestError extends Error {
-  constructor(status, message = statusMessages[status]) {
-    super(message);
-    this.status = status;
-  }
-}
 
 module.exports = RequestError;
