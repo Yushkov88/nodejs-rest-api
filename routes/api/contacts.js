@@ -1,62 +1,42 @@
 const express = require("express");
 
-const { validationBody } = require("../../middlewares");
-
-const schemas = require("../../schemas");
-
-const router = express.Router();
-
-const RequestError = require("../../helpers/RequestError");
 const {
   listContacts,
   getContactById,
   addContact,
-  updateContact,
   removeContact,
-} = require("../../models/contacts");
+  updateContact,
+  updateStatusContact,
+} = require("../../controllers");
 
-router.get("/", async (req, res, next) => {
-  const result = await listContacts();
-  res.json({
-    status: "success",
-    code: 200,
-    data: result,
-  });
-});
+const { controllerWrapper } = require("../../helpers");
 
-router.get("/:id", async (req, res, next) => {
-  const { id } = req.params;
-  const contact = await getContactById(id);
-  if (!contact) {
-    throw new RequestError(404, "Not found");
-  }
-  res.status(200).json(contact);
-});
+const { validationBody, isValidId } = require("../../middlewares");
 
-router.post(
-  "/",
-  validationBody(schemas.contacts.add),
-  async (req, res, next) => {
-    res.status(201).json(await addContact(req.body));
-  }
+const { addSchema, updateFavoriteSchema } = require("../../models/contacts");
+
+const router = express.Router();
+
+router.get("/", controllerWrapper(listContacts));
+
+router.get("/:id", isValidId, controllerWrapper(getContactById));
+
+router.post("/", validationBody(addSchema), controllerWrapper(addContact));
+
+router.delete("/:id", isValidId, controllerWrapper(removeContact));
+
+router.put(
+  "/:id",
+  isValidId,
+  validationBody(addSchema),
+  controllerWrapper(updateContact)
 );
 
-router.put("/:id", async (req, res, next) => {
-  const { id } = req.params;
-  const result = await updateContact(id, req.body);
-  if (!result) {
-    next(new RequestError(404, "Not found"));
-  }
-  res.json(result);
-});
-
-router.delete("/:id", async (req, res, next) => {
-  const { id } = req.params;
-  const result = await removeContact(id);
-  if (!result) {
-    throw new RequestError(404, "Not found");
-  }
-  res.json({ message: "contact deleted" });
-});
+router.patch(
+  "/:id/favorite",
+  isValidId,
+  validationBody(updateFavoriteSchema),
+  controllerWrapper(updateStatusContact)
+);
 
 module.exports = router;
