@@ -3,6 +3,7 @@ const isValidId = require("./isValidId");
 const addSchema = require("./validationJoi");
 const updateFavoriteSchema = require("./validationJoi");
 const phoneRegexp = require("./validationJoi");
+const authenticate = require("./authenticate");
 
 module.exports = {
   validationBody,
@@ -10,4 +11,5 @@ module.exports = {
   addSchema,
   updateFavoriteSchema,
   phoneRegexp,
+  authenticate,
 };
